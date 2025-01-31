@@ -1,0 +1,125 @@
+import React, { useState } from "react"; // Import useState
+import landscapingImg from "../../../src/Assets/Services.png";
+import { FaAngleLeft, FaAngleRight } from "react-icons/fa6";
+import { Link } from "react-router-dom";
+import { Swiper, SwiperSlide } from "swiper/react"; // Import Swiper and SwiperSlide
+import 'swiper/css'; // Import core Swiper styles
+import 'swiper/css/navigation'; // If you use navigation buttons
+import 'swiper/css/pagination'; // If you use pagination
+
+const ServiceCard = ({ image }) => (
+  <div className="w-full bg-white shadow-lg rounded-lg overflow-hidden">
+    <img className="w-full h-70 object-cover" src={image} alt="Service" />
+  </div>
+);
+
+const Services = () => {
+  const [currentIndex, setCurrentIndex] = useState(0); // Manage current service index
+
+  const services = [
+    { title: "Landscaping", description: "Transform your outdoor space into a stunning retreat with our expert landscaping services.", image: landscapingImg },
+    { title: "Trace Garden", description: "Transform your outdoor space into a stunning retreat with our expert landscaping services.", image: landscapingImg },
+    { title: "Garden Maintenance", description: "Transform your outdoor space into a stunning retreat with our expert landscaping services.", image: landscapingImg },
+    { title: "Farm Management", description: "Transform your outdoor space into a stunning retreat with our expert landscaping services.", image: landscapingImg },
+  ];
+
+  // Function to go to the next service
+  const goToNextService = () => {
+    setCurrentIndex((prevIndex) => (prevIndex + 1) % services.length); // Loop to first service after last one
+  };
+
+  // Function to go to the previous service
+  const goToPreviousService = () => {
+    setCurrentIndex((prevIndex) => (prevIndex - 1 + services.length) % services.length); // Loop to last service from first one
+  };
+
+  return (
+    <section className="bg-white-100 py-12 m-8 font-sans">
+      <div className="mx-auto px-0">
+        <h2 className="text-3xl font-bold text-gray-800 mb-12 text-start">Services</h2>
+
+        {/* Desktop View (No changes) */}
+        <div className="hidden md:block">
+          <div className="flex justify-between space-x-4">
+            {services.map((service, index) => (
+              <div key={index} className="w-full">
+                <ServiceCard image={service.image} />
+                <h3 className="text-xl font-semibold text-center text-gray-800 mt-4">{service.title}</h3>
+                <p className="text-center text-gray-600 mt-2">{service.description}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Arrow and View All Section */}
+          <div className="flex justify-center items-center mt-6 space-x-4">
+            <button className="bg-white md:w-[40px] h-[40px] flex items-center justify-center rounded-full border">
+              <span className="text-bio-green">
+                <FaAngleLeft />
+              </span>
+            </button>
+
+            <a href="/services" className="bg-bio-green text-white px-6 py-2 rounded">
+              View All
+            </a>
+
+            <button className="bg-white w-[40px] h-[40px] flex items-center justify-center rounded-full border">
+              <span className="text-bio-green">
+                <FaAngleRight />
+              </span>
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile View (with Swiper functionality) */}
+        <div className="block md:hidden">
+          {/* Swiper Component for sliding service cards */}
+          <Swiper
+            spaceBetween={16} // Space between slides
+            slidesPerView="auto" // Automatically adjusts number of slides visible
+            centeredSlides={true} // Keeps the active slide in the center
+            loop={true} // Enable infinite loop
+            onSlideChange={(swiper) => setCurrentIndex(swiper.realIndex)} // Update current index on slide change
+            className="my-6"
+          >
+            {services.map((service, index) => (
+              <SwiperSlide key={index}>
+                <div className="min-w-[300px] mx-2">
+                  <ServiceCard image={service.image} />
+                  <h3 className="text-xl font-semibold text-center text-gray-800 mt-4">{service.title}</h3>
+                  <p className="text-center text-gray-600 mt-2">{service.description}</p>
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+
+          {/* Arrow and View All Section for Mobile */}
+          <div className="flex justify-center items-center mt-6 space-x-4">
+            <button
+              className="bg-white w-[40px] h-[40px] flex items-center justify-center rounded-full border"
+              onClick={goToPreviousService} // Go to the previous service
+            >
+              <span className="text-bio-green">
+                <FaAngleLeft />
+              </span>
+            </button>
+
+            <Link to="/services" className="bg-bio-green text-white px-6 py-2 rounded">
+              View All
+            </Link>
+
+            <button
+              className="bg-white w-[40px] h-[40px] flex items-center justify-center rounded-full border"
+              onClick={goToNextService} // Go to the next service
+            >
+              <span className="text-bio-green">
+                <FaAngleRight />
+              </span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Services;

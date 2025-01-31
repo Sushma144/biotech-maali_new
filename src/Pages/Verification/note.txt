@@ -1,0 +1,877 @@
+
+import React, { useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import biotech from "../../../src/Assets/Biotech-Maali.png"; // Adjust the path to your logo image
+import { enqueueSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const Verification = ({ onClose, onSubmit }) => {
+  const navigate = useNavigate();
+  // Initialize formData state to store the values of the input fields
+  const [formData, setFormData] = useState({ otp: ["", "", "", ""] });
+  const [error, setError] = useState(""); // Add error state for validation
+  const [loading, setLoading] = useState(false);
+  console.log(loading);
+
+  const handleOTPChange = (e, index) => {
+    const newOTP = [...formData.otp];
+    newOTP[index] = e.target.value;
+    setFormData({ otp: newOTP });
+
+    // Automatically move to next input field
+    if (e.target.value && index < 3) {
+      const nextSibling = document.getElementById(`otp-${index + 1}`);
+      if (nextSibling) nextSibling.focus();
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (formData.otp.some((digit) => !digit)) {
+      setError("Please fill all OTP fields");
+      setLoading(false);
+      return;
+    }
+    console.log("Form Data:", formData);
+
+    setError(""); // Clear error on successful validation
+
+    // Mocking API call for OTP submission
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/account/validateOtp/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Response:", response.data);
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
+  const handleResendOTP = () => {
+    enqueueSnackbar("OTP Resent Successfully!", { variant: "info" });
+  };
+
+  // Handle submit
+  // const handleSubmit = () => {
+  //   console.log("Form submitted with data:", formData);
+  //   // Combine the code inputs into a single string for comparison
+  //   const enteredCode =
+  //     formData.code1 + formData.code2 + formData.code3 + formData.code4;
+
+  //   // The correct verification code (this would typically come from your backend)
+  //   const correctCode = "1234"; // Replace with the actual code or an API response
+
+  //   // Validate the entered code
+  //   if (enteredCode === correctCode) {
+  //     setError(""); // Clear any previous error
+
+  // Call onSubmit and pass the formData (verification code)
+  //        onSubmit(formData);
+
+  //     // Proceed to the next step (you can add any logic for the next step here)
+  //        console.log("Verification successful, proceeding to the next step...");
+  //      } else {
+  //     setError("Incorrect code, please try again."); // Show an error message if the code is wrong
+  //   }
+  // };
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+      onClick={onClose} // Close modal when clicking outside the content
+    >
+      <div
+        className="bg-white p-6 rounded-lg shadow-lg w-[350px] h-[380px]"
+        onClick={(e) => e.stopPropagation()} // Prevent closing modal when clicking inside content
+      >
+        <div className="relative mb-4 flex justify-center">
+          <img
+            src={biotech}
+            alt="Biotech Maali Logo"
+            className="w-[129px] h-[82px]"
+          />
+          <button
+            onClick={onClose}
+            className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
+          >
+            <FontAwesomeIcon icon={faTimes} size="lg" />
+          </button>
+        </div>
+        <h2 className="text-center text-lg font-semibold mb-6">
+          Enter verification code
+        </h2>
+        <div className="flex justify-center mb-4 space-x-2">
+          <form
+            className="w-full mb-6"
+            onSubmit={handleSubmit}
+            noValidate
+            style={{ maxWidth: "90%" }}
+          >
+            <div className="flex justify-center gap-4 mb-6">
+              {[...Array(4)].map((_, index) => (
+                <input
+                  key={index}
+                  id={`otp-${index}`}
+                  className="w-12 h-12 text-center border rounded outline-none focus:ring focus:ring-green-300 text-xl"
+                  type="text"
+                  maxLength="1"
+                  value={formData.otp[index] || ""}
+                  onChange={(e) => handleOTPChange(e, index)}
+                />
+              ))}
+            </div>
+          </form>
+        </div>
+        {/* Display error message if any */}
+        {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+        <div className="flex justify-between mb-6">
+          <button className="text-green-500 text-sm font-medium">Resend</button>
+        </div>
+        <button
+          onClick={handleSubmit}
+          className="w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700"
+        >
+          Submit
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default Verification;
+
+
+
+
+
+
+
+
+
+
+
+
+
+import React, { useState, useEffect } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faTimes } from "@fortawesome/free-solid-svg-icons";
+import biotech from "../../../src/Assets/Biotech-Maali.png"; // Adjust the path to your logo image
+import { enqueueSnackbar } from "notistack";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+const Verification = ({ onClose, onSubmit }) => {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ otp: "" });
+  const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Retrieve mobile number from localStorage
+  const userMobile = localStorage.getItem("userMobile");
+
+  useEffect(() => {
+    if (!userMobile) {
+      setError("Mobile number not found. Please sign in first.");
+    }
+  }, [userMobile]);
+
+  const handleOTPChange = (index, value) => {
+    if (/^\d*$/.test(value)) {
+      const updatedOtpDigits = [...otpDigits];
+      updatedOtpDigits[index] = value.slice(0, 1); // Ensure only a single digit
+      setOtpDigits(updatedOtpDigits);
+
+      // Automatically move focus to the next field
+      if (value && index < otpDigits.length - 1) {
+        document.getElementById(`otp-${index + 1}`).focus();
+      }
+
+      // Combine all digits into a single string
+      setFormData({ otp: updatedOtpDigits.join("") });
+    }
+  };
+
+  const handleKeyDown = (index, e) => {
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      document.getElementById(`otp-${index - 1}`).focus();
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    if (formData.otp.length < 4) {
+      setError("Please fill all OTP fields");
+      setLoading(false);
+      return;
+    }
+
+    const mobile = localStorage.getItem("userMobile"); // Retrieve mobile number from localStorage
+    if (!mobile) {
+      enqueueSnackbar("Mobile number is missing!", { variant: "error" });
+      setLoading(false);
+      return;
+    }
+
+    console.log("Form Data:", formData);
+
+    // Call onSubmit and pass the formData (verification code)
+    onSubmit(formData);
+
+    setError(""); // Clear error on successful validation
+
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/account/validateOtp/`,
+        { mobile, otp: formData.otp },
+        { headers: { "Content-Type": "application/json" } }
+      );
+      console.log("Response:", response.data);
+      enqueueSnackbar("OTP Verified Successfully!", { variant: "success" });
+      navigate("/nextPage"); // Redirect to the next page
+    } catch (error) {
+      console.error("Error:", error);
+      enqueueSnackbar("Failed to verify OTP", { variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOTP = () => {
+    enqueueSnackbar("OTP Resent Successfully!", { variant: "info" });
+  };
+
+  return (
+    <div
+      className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white p-6 rounded-lg shadow-lg w-[350px] h-[380px]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative mb-4 flex justify-center">
+          <img
+            src={biotech}
+            alt="Biotech Maali Logo"
+            className="w-[129px] h-[82px]"
+          />
+          <button
+            onClick={onClose}
+            className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
+          >
+            <FontAwesomeIcon icon={faTimes} size="lg" />
+          </button>
+        </div>
+        <h2 className="text-center text-lg font-semibold mb-6">Enter verification code</h2>
+        <form
+          className="flex flex-col items-center"
+          onSubmit={handleSubmit}
+          noValidate
+        >
+          <div className="flex justify-center gap-4 mb-4">
+            {otpDigits.map((digit, index) => (
+              <input
+                key={index}
+                id={`otp-${index}`}
+                className="w-12 h-12 text-center border rounded outline-none focus:ring focus:ring-green-300 text-xl"
+                type="text"
+                maxLength="1"
+                value={digit}
+                onChange={(e) => handleOTPChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+              />
+            ))}
+          </div>
+          {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+          <div className="flex justify-between w-full mb-4">
+            <button
+              type="button"
+              onClick={handleResendOTP}
+              className="text-green-500 text-sm font-medium"
+            >
+              Resend
+            </button>
+          </div>
+          <button
+            type="submit"
+            className={`w-full bg-green-600 text-white py-2 rounded-md ${
+              loading ? "opacity-50 cursor-not-allowed" : "hover:bg-green-700"
+            }`}
+            disabled={loading}
+          >
+            {loading ? "Submitting..." : "Submit"}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default Verification;
+===============================================================
+=============================================================
+
+// import React, { useState } from "react";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faTimes } from "@fortawesome/free-solid-svg-icons";
+// import biotech from "../../../src/Assets/Biotech-Maali.png"; // Adjust the path to your logo image
+// import { enqueueSnackbar } from "notistack";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+
+// const Verification = ({ onClose ,  onSubmit }) => {
+//   const navigate = useNavigate();
+//   const [formData, setFormData] = useState({ otp: "" });
+//   const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
+//   const [error, setError] = useState("");
+//   const [loading, setLoading] = useState(false);
+
+//   const handleOTPChange = (index, value) => {
+//     if (/^\d*$/.test(value)) {
+//       const updatedOtpDigits = [...otpDigits];
+//       updatedOtpDigits[index] = value.slice(0, 1); // Ensure only a single digit
+//       setOtpDigits(updatedOtpDigits);
+
+//       // Automatically move focus to the next field
+//       if (value && index < otpDigits.length - 1) {
+//         document.getElementById(`otp-${index + 1}`).focus();
+//       }
+
+//       // Combine all digits into a single string
+//       setFormData({ otp: updatedOtpDigits.join("") });
+//     }
+//   };
+
+//   const handleKeyDown = (index, e) => {
+//     if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+//       document.getElementById(`otp-${index - 1}`).focus();
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+
+//     if (formData.otp.length < 4) {
+//       setError("Please fill all OTP fields");
+//       setLoading(false);
+//       return;
+//     }
+
+//     const mobile = localStorage.getItem("mobileNumber"); // Retrieve mobile number from localStorage
+//     if (!mobile) {
+//       enqueueSnackbar("Mobile number is missing!", { variant: "error" });
+//       setLoading(false);
+//       return;
+//     }
+
+//     console.log("Form Data:", formData);
+
+//      // Call onSubmit and pass the formData (verification code)
+//          onSubmit(formData);
+
+//     setError(""); // Clear error on successful validation
+
+//     try {
+//       const response = await axios.post(
+//         `${process.env.REACT_APP_API_URL}/account/validateOtp/`,
+//         { mobile, otp: formData.otp },
+//         { headers: { "Content-Type": "application/json" } }
+//       );
+//       console.log("Response:", response.data);
+//       enqueueSnackbar("OTP Verified Successfully!", { variant: "success" });
+//       navigate("/nextPage"); // Redirect to the next page
+//     } catch (error) {
+//       console.error("Error:", error);
+//       enqueueSnackbar("Failed to verify OTP", { variant: "error" });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleResendOTP = () => {
+//     enqueueSnackbar("OTP Resent Successfully!", { variant: "info" });
+//   };
+
+//   return (
+//     <div
+//       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+//       onClick={onClose}
+//     >
+//       <div
+//         className="bg-white p-6 rounded-lg shadow-lg w-[350px] h-[380px]"
+//         onClick={(e) => e.stopPropagation()}
+//       >
+//         <div className="relative mb-4 flex justify-center">
+//           <img
+//             src={biotech}
+//             alt="Biotech Maali Logo"
+//             className="w-[129px] h-[82px]"
+//           />
+//           <button
+//             onClick={onClose}
+//             className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
+//           >
+//             <FontAwesomeIcon icon={faTimes} size="lg" />
+//           </button>
+//         </div>
+//         <h2 className="text-center text-lg font-semibold mb-6">Enter verification code</h2>
+//         <form
+//           className="flex flex-col items-center"
+//           onSubmit={handleSubmit}
+//           noValidate
+//         >
+//           <div className="flex justify-center gap-4 mb-4">
+//             {otpDigits.map((digit, index) => (
+//               <input
+//                 key={index}
+//                 id={`otp-${index}`}
+//                 className="w-12 h-12 text-center border rounded outline-none focus:ring focus:ring-green-300 text-xl"
+//                 type="text"
+//                 maxLength="1"
+//                 value={digit}
+//                 onChange={(e) => handleOTPChange(index, e.target.value)}
+//                 onKeyDown={(e) => handleKeyDown(index, e)}
+//               />
+//             ))}
+//           </div>
+//           {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+//           <div className="flex justify-between w-full mb-4">
+//             <button
+//               type="button"
+//               onClick={handleResendOTP}
+//               className="text-green-500 text-sm font-medium"
+//             >
+//               Resend
+//             </button>
+//           </div>
+//           <button
+//           onClick={handleSubmit}
+//             type="submit"
+//             className={`w-full bg-green-600 text-white py-2 rounded-md ${
+//               loading ? "opacity-50 cursor-not-allowed" : "hover:bg-green-700"
+//             }`}
+//             disabled={loading}
+//           >
+//             {loading ? "Submitting..." : "Submit" }
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Verification;
+
+
+// import React, { useState } from "react";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faTimes } from "@fortawesome/free-solid-svg-icons";
+// import biotech from "../../../src/Assets/Biotech-Maali.png"; // Adjust the path to your logo image
+// import { enqueueSnackbar } from "notistack";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import { useSelector } from 'react-redux';
+
+// const Verification = ({ onClose }) => {
+//   const navigate = useNavigate();
+//   const [formData, setFormData] = useState({ otp: "" });
+//   const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
+//   const [error, setError] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const mobileNumber = useSelector((state) => state.auth.currentUser.mobile);
+//   console.log(mobileNumber);
+
+
+   
+//   const handleOTPChange = (index, value) => {
+//     if (/^\d*$/.test(value)) {
+//       const updatedOtpDigits = [...otpDigits];
+//       updatedOtpDigits[index] = value.slice(0, 1); // Ensure only a single digit
+//       setOtpDigits(updatedOtpDigits);
+
+//       // Automatically move focus to the next field
+//       if (value && index < otpDigits.length - 1) {
+//         document.getElementById(`otp-${index + 1}`).focus();
+//       }
+
+//       // Combine all digits into a single string
+//       setFormData({ otp: updatedOtpDigits.join("") });
+//     }
+//   };
+
+//   const handleKeyDown = (index, e) => {
+//     if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+//       document.getElementById(`otp-${index - 1}`).focus();
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+
+//     if (formData.otp.length < 4) {
+//       setError("Please fill all OTP fields");
+//       setLoading(false);
+//       return;
+//     }
+    
+//     setError(""); // Clear error on successful validation
+
+//     // Include mobileNumber in the request data
+//     const dataToSubmit = {
+//       mobile: mobileNumber,
+//       otp: formData.otp,
+
+//     };
+//     console.log(dataToSubmit, formData, "Data to submit form data diffrence");
+    
+
+//     try {
+//       const response = await axios.post(
+//         `${process.env.REACT_APP_API_URL}/account/validateOtp/`,
+//         dataToSubmit, // Send both mobile and OTP
+//         {
+//           headers: {
+//             "Content-Type": "application/json",
+//           },
+//         }
+//       );
+//       console.log("Response:", response.data);
+//       enqueueSnackbar("OTP Verified Successfully!", { variant: "success" });
+//       navigate("/nextPage"); // Redirect to the next page
+//     } catch (error) {
+//       console.error("Error:", error);
+//       enqueueSnackbar("Failed to verify OTP", { variant: "error" });
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleResendOTP = () => {
+//     enqueueSnackbar("OTP Resent Successfully!", { variant: "info" });
+//   };
+
+//   return (
+//     <div
+//       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+//       onClick={onClose}
+//     >
+//       <div
+//         className="bg-white p-6 rounded-lg shadow-lg w-[350px] h-[380px]"
+//         onClick={(e) => e.stopPropagation()}
+//       >
+//         <div className="relative mb-4 flex justify-center">
+//           <img
+//             src={biotech}
+//             alt="Biotech Maali Logo"
+//             className="w-[129px] h-[82px]"
+//           />
+//           <button
+//             onClick={onClose}
+//             className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
+//           >
+//             <FontAwesomeIcon icon={faTimes} size="lg" />
+//           </button>
+//         </div>
+//         <h2 className="text-center text-lg font-semibold mb-6">
+//           Enter verification code
+//         </h2>
+//         <form
+//           className="flex flex-col items-center"
+//           onSubmit={handleSubmit}
+//           noValidate
+//         >
+//           <div className="flex justify-center gap-4 mb-4">
+//             {otpDigits.map((digit, index) => (
+//               <input
+//                 key={index}
+//                 id={`otp-${index}`}
+//                 className="w-12 h-12 text-center border rounded outline-none focus:ring focus:ring-green-300 text-xl"
+//                 type="text"
+//                 maxLength="1"
+//                 value={digit}
+//                 onChange={(e) => handleOTPChange(index, e.target.value)}
+//                 onKeyDown={(e) => handleKeyDown(index, e)}
+//               />
+//             ))}
+//           </div>
+//           {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+//           <div className="flex justify-between w-full mb-4">
+//             <button
+//               type="button"
+//               onClick={handleResendOTP}
+//               className="text-green-500 text-sm font-medium"
+//             >
+//               Resend
+//             </button>
+//           </div>
+//           <button
+         
+//             type="submit"
+//             className={`w-full bg-green-600 text-white py-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-green-700"}`}
+//             disabled={loading}
+//           >
+//             {loading ? "Submitting..." : "Submit"}
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Verification;
+
+=====================================================================================================================
+code is correct
+// // import { signInSuccess } from "../../redux/Auth/authSlice"; // Import the action to update the user state
+// import React, { useState } from "react";
+// import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// import { faTimes } from "@fortawesome/free-solid-svg-icons";
+// import biotech from "../../../src/Assets/Biotech-Maali.png";
+// import { enqueueSnackbar } from "notistack";
+// import { useNavigate } from "react-router-dom";
+// import axios from "axios";
+// import { useSelector, useDispatch } from "react-redux";
+// import {
+//   setVerifiedUser,
+//   setNewUser,
+// } from "../../redux/User/verificationSlice"; // Correct the import
+// import { setUsername } from "../../redux/Slice/userSlice";
+// const Verification = ({ onClose, onSubmit }) => {
+//   const navigate = useNavigate();
+//   const dispatch = useDispatch();
+//   const [formData, setFormData] = useState({ otp: "" });
+//   const [otpDigits, setOtpDigits] = useState(["", "", "", ""]);
+//   const [error, setError] = useState("");
+//   const [loading, setLoading] = useState(false);
+//   const [responseMessage, setResponseMessage] = useState(""); // Store response message
+//   const mobileNumber = useSelector((state) => state.auth.signInSuccess?.mobile);
+
+//   const handleOTPChange = (index, value) => {
+//     if (/^\d*$/.test(value)) {
+//       const updatedOtpDigits = [...otpDigits];
+//       updatedOtpDigits[index] = value.slice(0, 1);
+//       setOtpDigits(updatedOtpDigits);
+
+//       if (value && index < otpDigits.length - 1) {
+//         document.getElementById(`otp-${index + 1}`).focus();
+//       }
+
+//       setFormData({ otp: updatedOtpDigits.join("") });
+//     }
+//   };
+
+//   const handleKeyDown = (index, e) => {
+//     if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+//       document.getElementById(`otp-${index - 1}`).focus();
+//     }
+//   };
+
+//   const handleSubmit = async (e) => {
+//     e.preventDefault();
+//     setLoading(true);
+
+//     if (formData.otp.length < 4) {
+//       setError("Please fill all OTP fields");
+//       setLoading(false);
+//       return;
+//     }
+
+//     setError(""); // Reset error message
+
+//     try {
+//       // const response = await axios.post(
+//       //   `${process.env.REACT_APP_API_URL}/account/validateOtp/`,
+//       //   dataToSubmit,
+//       //   {
+//       //     headers: { "Content-Type": "application/json" },
+//       //   }
+//       // );
+
+//       // if (response.status === 200) {
+//       //   const { message, user, token } = response.data;
+
+//       //   if (message === "OTP is valid. and registered User.") {
+//       //     enqueueSnackbar("OTP Verified Successfully! Registered User.", {
+//       //       variant: "success",
+//       //     });
+
+//       //     // Store the user and token in Redux
+//       //     dispatch(setVerifiedUser({ user, token }));
+//       //     console.log("user", user)
+//       //     dispatch(setUsername({ username: user.name }));
+//       //     // Optionally, redirect or handle additional logic for registered users
+//       //     onClose();
+//       //     navigate("/"); // or any other page for registered users
+//       //   } else if (message === "OTP is valid. and only registered with mobile number.") {
+//       //     enqueueSnackbar("OTP Verified Successfully! New User.", {
+//       //       variant: "success",
+//       //     });
+
+//       //     // Store the new user data in Redux (without a token)
+//       //     dispatch(setNewUser({ user }));
+
+//       //     // Open the details module for the new user
+//       //     if (onSubmit) {
+//       //       onSubmit(); // Invoke the callback to open the details module
+//       //     }
+//       //   }
+//       // }
+//       console.log(JSON.parse(localStorage.getItem("storeUserData")));
+//       let mobile = JSON.parse(localStorage.getItem("storeUserData"))?.mobile;
+//       // const response = await axios.post(
+//       //   `${process.env.REACT_APP_API_URL}/api/token/refresh/`,
+//       //   {
+//       //     refresh:localStorage.getItem("refresh_token"),
+//       //   },
+//       //   {
+//       //     headers: { "Content-Type": "application/json" },
+//       //   }
+//       // );
+//       //if (response.data.access) {
+//         const verify_response = await axios.post(
+//           `${process.env.REACT_APP_API_URL}/api/token/verify/`,
+//           { token:localStorage.getItem("access_token") },
+//           {
+//             headers: { "Content-Type": "application/json" },
+//           }
+//         );
+//         const dataToSubmit = {
+//           mobile: mobile,
+//           otp: formData.otp,
+//           token: localStorage.getItem("access_token"),
+//         };
+//         const verify_otp = await axios.post(
+//           `${process.env.REACT_APP_API_URL}/account/validateOtp/`,
+//           dataToSubmit,
+//           {
+//             headers: { "Content-Type": "application/json" },
+//           }
+//         );
+//         if (verify_otp.status === 200) {
+//           const user_data = verify_otp.data;
+
+//           if (user_data.message === "OTP is valid. and registered User.") {
+//             enqueueSnackbar("OTP Verified Successfully! Registered User.", {
+//               variant: "success",
+//             });
+//           }
+//           //     // Store the user and token in Redux
+//           let user = user_data.data.user;
+//           let token = user_data.data.token;
+//           localStorage.setItem("refresh_token", token.refresh);
+//           localStorage.setItem("access_token",token.access);
+//           dispatch(setVerifiedUser({ user, token }));
+//           console.log(token);
+//           if (user.name) {
+//             dispatch(setUsername(user.name));
+//           } else if (user.first_name) {
+//             dispatch(setUsername(user.first_name));
+//           }
+//           onClose();
+//           navigate("/");
+//         }
+//       //}
+//     } catch (error) {
+//       if (error.response) {
+//         const { status, data } = error.response;
+//         if (status === 400 && data.message === "Invalid otp") {
+//           setResponseMessage(data.message); // Set the response message
+//           setError("Invalid OTP. Please try again."); // Show error inside the component
+//           enqueueSnackbar("Invalid OTP. Please try again.", {
+//             variant: "error",
+//           });
+//         }
+//       }
+//     } finally {
+//       setLoading(false);
+//     }
+//   };
+
+//   const handleResendOTP = () => {
+//     enqueueSnackbar("OTP Resent Successfully!", { variant: "info" });
+//   };
+
+//   return (
+//     <div
+//       className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
+//       onClick={onClose}
+//     >
+//       <div
+//         className="bg-white p-6 rounded-lg shadow-lg w-[350px] h-[380px]"
+//         onClick={(e) => e.stopPropagation()}
+//       >
+//         <div className="relative mb-4 flex justify-center">
+//           <img
+//             src={biotech}
+//             alt="Biotech Maali Logo"
+//             className="w-[129px] h-[82px]"
+//           />
+//           <button
+//             onClick={onClose}
+//             className="absolute top-0 right-0 text-gray-500 hover:text-gray-700"
+//           >
+//             <FontAwesomeIcon icon={faTimes} size="lg" />
+//           </button>
+//         </div>
+//         <h2 className="text-center text-lg font-semibold mb-6">
+//           Enter verification code
+//         </h2>
+//         <form
+//           className="flex flex-col items-center"
+//           onSubmit={handleSubmit}
+//           noValidate
+//         >
+//           <div className="flex justify-center gap-4 mb-4">
+//             {otpDigits.map((digit, index) => (
+//               <input
+//                 key={index}
+//                 id={`otp-${index}`}
+//                 className="w-12 h-12 text-center border rounded outline-none focus:ring focus:ring-green-300 text-xl"
+//                 type="text"
+//                 maxLength="1"
+//                 value={digit}
+//                 onChange={(e) => handleOTPChange(index, e.target.value)}
+//                 onKeyDown={(e) => handleKeyDown(index, e)}
+//               />
+//             ))}
+//           </div>
+//           {error && <p className="text-red-500 text-xs mb-4">{error}</p>}
+//           <div className="flex justify-between w-full mb-4">
+//             <button
+//               type="button"
+//               onClick={handleResendOTP}
+//               className="text-green-500 text-sm font-medium"
+//             >
+//               Resend
+//             </button>
+//           </div>
+//           <button
+//             type="submit"
+//             className={`w-full bg-green-600 text-white py-2 rounded-md ${loading ? "opacity-50 cursor-not-allowed" : "hover:bg-green-700"}`}
+//             disabled={loading}
+//           >
+//             {loading ? "Submitting..." : "Submit"}
+//           </button>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Verification;
+

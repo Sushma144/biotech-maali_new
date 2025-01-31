@@ -1,0 +1,445 @@
+import React, { useState } from "react";
+import useDeviceDetect from "../../../CustomHooks/useDeviceDetect";
+import DeactivationConfirmation from "../Deactivation/Deactivation";
+import { useSelector } from "react-redux";
+
+const ProfilePage = () => {
+  const { isDesktop } = useDeviceDetect();
+  const [showDeactivation, setShowDeactivation] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [dateOfBirth, setDateOfBirth] = useState("");
+ 
+  const storeName = useSelector((state) => state.verification?.user?.first_name);
+console.log(storeName);
+
+const storeMobile = useSelector((state) => state.verification?.user?.mobile);
+console.log(storeMobile);
+
+const[userName , setUserName]=useState(storeName);
+const [userMobile, setUserMobile] = useState(storeMobile);
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+  };
+
+  const handleCancelClick = () => {
+    setIsEditing(false);
+  };
+
+  const [faqs, setFaqs] = useState([
+    {
+      question:
+        "What happens when I update my email address (or mobile number)?",
+      isOpen: false,
+    },
+    { question: "How do I reset my password?", isOpen: false },
+    { question: "Where can I view my order history?", isOpen: false },
+  ]);
+
+  const toggleFaq = (index) => {
+    setFaqs(
+      faqs.map((faq, i) =>
+        i === index ? { ...faq, isOpen: !faq.isOpen } : faq
+      )
+    );
+  };
+
+  const [addresses, setAddresses] = useState([
+    {
+      firstName: "Mallikjan",
+      lastName: "Barrodwale",
+      phone: "8884981840",
+      address: "Mahalaxmi layout Nehru Nagar, Gokul road, Hubli - 58820",
+      city: "Hubli",
+      state: "Karnataka",
+      pinCode: "58820",
+      isHome: true,
+      isWork: false,
+    },
+  ]);
+
+  const handleEdit = (index) => {
+    setAddresses(
+      addresses.map((address, i) =>
+        i === index ? { ...address, isEditing: true } : address
+      )
+    );
+  };
+
+  const handleCancelEdit = (index) => {
+    setAddresses(
+      addresses.map((address, i) =>
+        i === index ? { ...address, isEditing: false } : address
+      )
+    );
+  };
+
+  const handleSaveEdit = (index) => {
+    setAddresses(
+      addresses.map((address, i) =>
+        i === index ? { ...address, isEditing: false } : address
+      )
+    );
+  };
+
+  const handleAddressChange = (index, field, value) => {
+    setAddresses(
+      addresses.map((address, i) =>
+        i === index ? { ...address, [field]: value } : address
+      )
+    );
+  };
+
+  const handleAddNewAddress = () => {
+    setAddresses([
+      ...addresses,
+      {
+        firstName: "",
+        lastName: "",
+        phone: "",
+        address: "",
+        city: "",
+        state: "",
+        pinCode: "",
+        isHome: false,
+        isWork: false,
+        isEditing: true,
+      },
+    ]);
+  };
+
+  return (
+    <div className="flex px-8">
+      {showDeactivation ? (
+        <DeactivationConfirmation onCancel={() => setShowDeactivation(false)} />
+      ) : (
+        isDesktop && (
+          <main className="flex-1 bg-white p-8">
+            <div className="border p-6 rounded-md shadow-md bg-white">
+              <h2 className="text-xl font-bold">Personal Information</h2>
+              <div className="text-right">
+                {!isEditing ? (
+                  <p
+                    className="text-green-600 font-semibold cursor-pointer"
+                    onClick={handleEditClick}
+                  >
+                    Edit
+                  </p>
+                ) : (
+                  <p
+                    className="text-red-600 font-semibold cursor-pointer"
+                    onClick={handleCancelClick}
+                  >
+                    Cancel
+                  </p>
+                )}
+              </div>
+
+              {/* Form Fields */}
+              <form>
+                {/* Name Fields */}
+                <div className="grid grid-cols-2 gap-6 mt-6">
+                  <input
+                    type="text"
+                    placeholder="Enter your First Name"
+                    className="p-3 border rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    disabled={!isEditing}
+                    value={userName}
+                    onChange={(e) => setUserName(e.target.value)} // Update state
+                  />
+                  <input
+                    type="text"
+                    placeholder="Enter your Last Name"
+                    className="p-3 border rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    disabled={!isEditing}
+                  />
+                </div>
+
+                {/* Gender & Date of Birth Section */}
+                <div className="grid grid-cols-2 gap-6 mt-6">
+                  <div>
+                    <label className="block font-semibold">Gender</label>
+                    <div className="flex space-x-4 mt-2">
+                      <label>
+                        <input
+                          type="radio"
+                          name="gender"
+                          className="mr-2"
+                          disabled={!isEditing}
+                        />{" "}
+                        Male
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name="gender"
+                          className="mr-2"
+                          disabled={!isEditing}
+                        />{" "}
+                        Female
+                      </label>
+                      <label>
+                        <input
+                          type="radio"
+                          name="gender"
+                          className="mr-2"
+                          disabled={!isEditing}
+                        />{" "}
+                        Others
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <input
+                      type="date"
+                      placeholder="Date of Birth"
+                      value={dateOfBirth}
+                      onChange={(e) => setDateOfBirth(e.target.value)}
+                      className="p-3 border rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500 mt-2"
+                      disabled={!isEditing}
+                    />
+                  </div>
+                </div>
+
+                {/* Other Fields */}
+                <div className="grid grid-cols-2 gap-6 mt-6">
+                  <input
+                    type="email"
+                    placeholder="Enter your Email ID"
+                    className="p-3 border rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    disabled={!isEditing}
+                  />
+                  <input
+                    type="tel"
+                    placeholder="Enter your Mobile Number"
+                    className="p-3 border rounded w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    disabled={true}
+                    value={userMobile}
+                    onChange={(e) => setUserMobile(e.target.value)} // Update state
+                  />
+                </div>
+
+                {/* Save Button */}
+                {isEditing && (
+                  <div className="mt-6">
+                    <button
+                      type="submit"
+                      className="bg-bio-green text-white px-4 py-2 rounded hover:bg-green-700"
+                    >
+                      Save
+                    </button>
+                  </div>
+                )}
+              </form>
+            </div>
+
+            {/* Address Section */}
+
+            <div className="mt-6">
+              <h3 className="text-lg font-bold mb-4">Addresses</h3>
+              {addresses.map((address, index) => (
+                <div
+                  key={index}
+                  className="p-4 mb-4 border rounded-lg shadow-md"
+                >
+                  {address.isEditing ? (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold">Edit Address</span>
+                        <button
+                          className="text-red-500 hover:text-red-700 font-semibold"
+                          onClick={() => handleCancelEdit(index)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <input
+                          type="text"
+                          placeholder="First Name"
+                          value={address.firstName || ""}
+                          onChange={(e) =>
+                            handleAddressChange(
+                              index,
+                              "firstName",
+                              e.target.value
+                            )
+                          }
+                          className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Last Name"
+                          value={address.lastName || ""}
+                          onChange={(e) =>
+                            handleAddressChange(
+                              index,
+                              "lastName",
+                              e.target.value
+                            )
+                          }
+                          className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Apartment, Suite, etc. (Optional)"
+                          value={address.address || ""}
+                          onChange={(e) =>
+                            handleAddressChange(
+                              index,
+                              "address",
+                              e.target.value
+                            )
+                          }
+                          className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="text"
+                          placeholder="City"
+                          value={address.city || ""}
+                          onChange={(e) =>
+                            handleAddressChange(index, "city", e.target.value)
+                          }
+                          className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <select
+                          value={address.state || ""}
+                          onChange={(e) =>
+                            handleAddressChange(index, "state", e.target.value)
+                          }
+                          className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        >
+                          <option value="Karnataka">Karnataka</option>
+                          {/* Add more states as options */}
+                        </select>
+                        <input
+                          type="text"
+                          placeholder="PIN Code"
+                          value={address.pinCode || ""}
+                          onChange={(e) =>
+                            handleAddressChange(
+                              index,
+                              "pinCode",
+                              e.target.value
+                            )
+                          }
+                          className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        />
+                        <input
+                          type="tel"
+                          placeholder="Phone"
+                          value={address.phone || ""}
+                          onChange={(e) =>
+                            handleAddressChange(index, "phone", e.target.value)
+                          }
+                          className="p-3 border rounded focus:outline-none focus:ring-2 focus:ring-indigo-500 col-span-2"
+                        />
+                      </div>
+                      <div className="mt-4">
+                        <label className="block font-semibold">
+                          Address Type
+                        </label>
+                        <div className="flex space-x-4 mt-2">
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={address.isHome || false}
+                              onChange={(e) =>
+                                handleAddressChange(
+                                  index,
+                                  "isHome",
+                                  e.target.checked
+                                )
+                              }
+                              className="mr-2"
+                            />
+                            Home (All day Delivery)
+                          </label>
+                          <label>
+                            <input
+                              type="checkbox"
+                              checked={address.isWork || false}
+                              onChange={(e) =>
+                                handleAddressChange(
+                                  index,
+                                  "isWork",
+                                  e.target.checked
+                                )
+                              }
+                              className="mr-2"
+                            />
+                            Work (9am - 6pm)
+                          </label>
+                        </div>
+                      </div>
+                      <div className="flex space-x-4 mt-4">
+                        <button
+                          className="bg-bio-green text-white font-semibold py-2 px-4 rounded hover:bg-green-600"
+                          onClick={() => handleSaveEdit(index)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="border border-bio-green text-bio-green font-semibold py-2 px-4 rounded hover:bg-green-100"
+                          onClick={() => handleCancelEdit(index)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <span className="font-bold">{`${address.firstName} ${address.lastName}`}</span>
+                        <button
+                          className="text-green-500 hover:text-green-700 font-semibold"
+                          onClick={() => handleEdit(index)}
+                        >
+                          Edit
+                        </button>
+                      </div>
+                      <p>{address.phone}</p>
+                      <p>{address.address}</p>
+                    </div>
+                  )}
+                </div>
+              ))}
+              <button
+                onClick={handleAddNewAddress}
+                className="flex items-center gap-2 mt-4 p-2 text-blue-500 font-semibold hover:text-blue-700"
+              >
+                <span className="text-lg font-bold">+</span> Add New Address
+              </button>
+            </div>
+
+            {/* FAQs Section */}
+            <div className="mt-8">
+              <h2 className="text-lg font-bold mb-4">FAQs</h2>
+              {faqs.map((faq, index) => (
+                <div key={index} className="border-t">
+                  <div
+                    className="py-4 cursor-pointer font-semibold text-gray-800 flex justify-between"
+                    onClick={() => toggleFaq(index)}
+                  >
+                    <p>{faq.question}</p>
+                    <p>{faq.isOpen ? "-" : "+"}</p>
+                  </div>
+                  {faq.isOpen && (
+                    <div className="py-2 text-gray-600">
+                      <p>
+                        This is a placeholder answer for the question. More
+                        detailed information can go here.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </main>
+        )
+      )}
+    </div>
+  );
+};
+
+export default ProfilePage;

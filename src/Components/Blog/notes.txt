@@ -1,0 +1,125 @@
+
+import React from 'react';
+import Slider from 'react-slick';
+import blog from '../../Assets/Blog/Blog.png'; // Desktop image
+import blogMobile from '../../Assets/Blog/Blog.png'; // Mobile image
+
+const Blog = () => {
+  const blogs = [
+    {
+      id: 1,
+      title: 'Fascinating Facts About the Lucky Bamboo Plant',
+      imageUrl: blog, // Desktop image
+      mobileImageUrl: blogMobile, // Mobile image
+      link: '#' // Replace with actual link if necessary
+    },
+    {
+      id: 2,
+      title: 'Fascinating Facts About the Lucky Bamboo Plant',
+      imageUrl: blog,
+      mobileImageUrl: blogMobile,
+      link: '#'
+    },
+    {
+      id: 3,
+      title: 'Fascinating Facts About the Lucky Bamboo Plant',
+      imageUrl: blog,
+      mobileImageUrl: blogMobile,
+      link: '#'
+    }
+  ];
+
+  // Slider settings for mobile view
+  const sliderSettings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 1,
+    slidesToScroll: 1,
+    responsive: [
+      {
+        breakpoint: 768, // Adjust this value based on your design
+        settings: {
+          arrows: false,
+          dots: true
+        }
+      }
+    ]
+  };
+
+  return (
+    <section className="p-8">
+      <div className="flex justify-between items-center mb-6 font-sans">
+        <h2 className="text-3xl font-bold ">Blog</h2>
+        
+          <button className="text-[#fff] bg-[#749F09] rounded-md py-2 px-4 font-semibold">
+            View All
+          </button>
+       
+      </div>
+
+      <div className="hidden md:block"> {/* Hide for mobile view */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 justify-center items-center font-sans">
+          {blogs.map((blog) => (
+            <div 
+              key={blog.id} 
+              className="bg-white  overflow-hidden 
+                         flex flex-col items-center justify-center"
+            >
+              <img 
+                src={blog.imageUrl} 
+                alt={blog.title} 
+                className="w-full h-70 object-cover"
+              />
+              <div className="p-4 text-center">
+                <h3 className="text-xl font-bold mb-2">{blog.title}</h3>
+                <a 
+                  href={blog.link} 
+                  className="text-blue-500 hover:underline inline-block"
+                >
+                  Read Now &rarr;
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="md:hidden"> {/* Show slider for mobile view */}
+        <Slider {...sliderSettings}>
+          {blogs.map((blog) => (
+            <div 
+              key={blog.id} 
+              className="bg-white shadow-md rounded-lg overflow-hidden 
+                         flex flex-col items-center justify-center"
+            >
+              <picture>
+                {/* Mobile image for screens smaller than 768px */}
+                <source 
+                  media="(max-width: 768px)" 
+                  srcSet={`${blog.mobileImageUrl}?w=500&h=300&fit=crop`}  // Specify size for mobile
+                />
+                <img 
+                  src={blog.imageUrl}  // Desktop image as fallback
+                  alt={blog.title} 
+                  className="w-full h-auto md:h-50 object-cover"  // Adjust height for mobile
+                />
+              </picture>
+              <div className="p-4 text-center">
+                <h3 className="text-xl font-bold mb-2">{blog.title}</h3>
+                <a 
+                  href={blog.link} 
+                  className="text-blue-500 hover:underline inline-block"
+                >
+                  Read Now &rarr;
+                </a>
+              </div>
+            </div>
+          ))}
+        </Slider>
+      </div>
+    </section>
+  );
+};
+
+export default Blog;

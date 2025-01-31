@@ -1,0 +1,94 @@
+import React, { useState } from "react";
+
+const Carriers = () => {
+  const [selectedTab, setSelectedTab] = useState("non-tech");
+  const [activeJob, setActiveJob] = useState(null);
+
+  const jobs = {
+    "non-tech": [
+      "Lead Procurement (Flower and Plants)",
+      "Senior Product Manager (Marketing)",
+      "Senior Product Manager (Marketing)",
+      "Senior Product Manager (Marketing)",
+      "Lead Procurement (Flower and Plants)",
+      "Senior Product Manager (Marketing)",
+      "Senior Product Manager (Marketing)",
+      "Senior Product Manager (Marketing)",
+      "Lead Procurement (Flower and Plants)",
+      "Senior Product Manager (Marketing)",
+      "Senior Product Manager (Marketing)",
+      "Senior Product Manager (Marketing)",
+    ],
+    tech: [
+      "Senior Software Engineer",
+      "DevOps Engineer",
+      "Full Stack Developer",
+      "Data Scientist",
+      "Senior Software Engineer",
+      "DevOps Engineer",
+      "Full Stack Developer",
+      "Data Scientist",
+      "Senior Software Engineer",
+      "DevOps Engineer",
+      "Full Stack Developer",
+      "Data Scientist",
+    ],
+  };
+
+  const handleTabClick = (tab) => {
+    setSelectedTab(tab);
+    setActiveJob(null); // Reset active job when switching tabs
+  };
+
+  const toggleJob = (index) => {
+    setActiveJob(activeJob === index ? null : index);
+  };
+
+  return (
+    <div className="w-full flex flex-col items-center mt-10">
+      <h1 className="text-3xl font-bold mb-5">
+        Shape the Future with Biotech Maali
+      </h1>
+      <div className="flex space-x-4 mb-5">
+        <button
+          className={`px-4 py-2 ${
+            selectedTab === "non-tech" ? "bg-gray-800 text-white" : "bg-gray-200"
+          } rounded`}
+          onClick={() => handleTabClick("non-tech")}
+        >
+          Non-Tech Positions
+        </button>
+        <button
+          className={`px-4 py-2 ${
+            selectedTab === "tech" ? "bg-gray-800 text-white" : "bg-gray-200"
+          } rounded`}
+          onClick={() => handleTabClick("tech")}
+        >
+          Technology Positions
+        </button>
+      </div>
+
+      <div className="w-3/4 bg-gray-100 p-4 rounded-lg shadow-lg">
+        <h2 className="text-xl font-semibold mb-4">Current Openings</h2>
+        {jobs[selectedTab].map((job, index) => (
+          <div key={index} className="mb-2">
+            <div
+              className="bg-white p-4 rounded shadow cursor-pointer flex justify-between items-center"
+              onClick={() => toggleJob(index)}
+            >
+              <span>{job}</span>
+              <span>{activeJob === index ? "-" : "+"}</span>
+            </div>
+            {activeJob === index && (
+              <div className="mt-2 p-2 bg-gray-50 rounded">
+                <p>Job description for {job}...</p>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Carriers;
